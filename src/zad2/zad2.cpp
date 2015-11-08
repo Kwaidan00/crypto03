@@ -1,7 +1,16 @@
-/* CTR - pozwala odszyfrować fragment danych
+/* 
+ * Author: Aleksander Spyra
  * 
- * Kompilacja:
+ * This program plays an encrypted audio files.
+ * Supported audio formats: OGG, FLAC
+ * Supproted AES encoding modes:
+ * 	CTR
+ * 
+ * Compilation:
  * g++ -std=c++11 zad2.cpp -lSDL -lSDL_mixer -lcrypto
+ *
+ * Running:
+ * ./a.out encrypted_file
  */
 
 #include <cstdio>
@@ -11,7 +20,6 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
-//#include "zad2_f.h"
 #include "../zad1/fun.h"
 #include "../zad1/my_crypto.h"
 #include "../zad1/my_keystore_f.h"
@@ -20,6 +28,9 @@ using namespace std;
 
 Mix_Music *music = NULL;
 
+/* 
+ * 
+ */
 void clean()
 {
 	Mix_FreeMusic(music);
@@ -48,17 +59,14 @@ int main(int argc, const char* argv[])
 	}
 
 	ifstream config_file_i0(".config0");
-
+/* 
+ * Jeśli plik .config0 nie istnieje, jest to pierwsze uruchomienie - należy utworzyć pliki konfiguracyjne.
+ */
 	if (config_file_i0.is_open() == false)
 	{
 		config_file_i0.close();
 		printf("Creating file .config...\n");
-
-		//FILE *config_file_o = fopen(".config", "wb");
-		//FILE *config0_file_o = fopen(".config0", "wb");
-
-		//ofstream config_file_o(".config");		// z zaszyfrowanym kluczem
-		ofstream config0_file_o(".config0");		// z hashem
+		ofstream config0_file_o(".config0");		// plik z hashem PIN-u
 
 		string pin = "";
 		printf("Set PIN:\n");
@@ -70,9 +78,8 @@ int main(int argc, const char* argv[])
 			c = (char) getchar();
 		}
 		set_stdin_echo(true);
-		//cout << "\nWpisales haslo: " << pin << "\n";
 /*
- * Hashowanie hasla - idzie do pliku config0. Hashowanie hasla jest dobrym rozwiązaniem.
+ * Podany PIN do progamu zostaje umieszczony w postaci hasha w postaci heksadecymalnej w pliku .config0
  */
 		const char *pin_const_char = pin.c_str();
 		unsigned char pin_uchar[pin.length()];
@@ -84,14 +91,13 @@ int main(int argc, const char* argv[])
 		unsigned int pin_hash_len = hash_sha512(pin_uchar, pin_hash, strlen(pin_const_char));
 		string hashed_pin = hex_table(pin_hash, pin_hash_len);
 		config0_file_o << hashed_pin << endl;
-		//cout << "hash: " << hashed_password << endl;
-		//keystore_file_o.flush();
 		config0_file_o.close();
 
-		//fwrite(password_hash, sizeof(unsigned char), password_hash_len, config0_file_o);
-		//fclose(config0_file_o);
 /* 
- * Do pliku .config idą dane etc
+ * This data will be stored in the .config:
+ * keystore_path - path to the keystore file
+ * key_id - ID of the key used to file encryption
+ * password - password to the key stored in the keystore.
  * 
  */
 		string keystore_path_set = "";
@@ -120,7 +126,9 @@ int main(int argc, const char* argv[])
 			c = (char) getchar();
 		}
 		set_stdin_echo(true);
-
+/*
+ * File with configuration data will be encrypted.
+ */
 		ofstream temp_o(".temp");
 		keystore_path = keystore_path_set;
 		key_id = key_id_set;
@@ -138,7 +146,7 @@ int main(int argc, const char* argv[])
 		remove(".temp");
 	}
 /*
- * Plik .config już istnieje
+ * If .config file exists
  */
 	else
 	{
@@ -152,16 +160,12 @@ int main(int argc, const char* argv[])
 			c = (char) getchar();
 		}
 		set_stdin_echo(true);
-		//config_file_i0.close();
-		//cout << "\nWpisales haslo: " << password2 << "\n";
-		//FILE *config_file_i = fopen(".config", "rb");
 
 		string line = "";
 		getline(config_file_i0, line);
-
-		//unsigned char buf[128];
-		//int r = fread( buf, sizeof(unsigned char), 128, config_file_i);
-
+/*
+ * PIN authorization - comparing with password's hash from the .config0 file.
+ */
 		const char *password2_const_char = password2.c_str();
 		unsigned char password2_uchar[password2.length()];
 		for (int i = 0; i < password2.length(); i++)
@@ -171,8 +175,7 @@ int main(int argc, const char* argv[])
 		unsigned char password2_hash[EVP_MAX_MD_SIZE];
 		unsigned int password2_hash_len = hash_sha512(password2_uchar, password2_hash, strlen(password2_const_char));
 		string password2_hex = hex_table(password2_hash, password2_hash_len);
-		//cout << "hash: " << password2_hex << endl;
-		//cout << "line: " << line << endl;
+
 		if ( password2_hex.compare(line.substr(0, 128)) == 0 )
 		{
 			printf("ACCESS GRANTED\n");
@@ -182,7 +185,9 @@ int main(int argc, const char* argv[])
 			printf("ACCES DENIED\n");
 			exit(-1);
 		}
-
+/*
+ * Encrypted music file will be decrypted to the .temp file.
+ */
 		FILE *config0_i = fopen(".config", "rb");
 		FILE *config0_o = fopen(".temp", "wb");
 
@@ -198,7 +203,6 @@ int main(int argc, const char* argv[])
 		getline(temp_i, key_id);
 		getline(temp_i, password);
 		temp_i.close();
-		//cout << keystore_path << key_id << password << endl;
 
 		remove(".temp");
 	}
@@ -259,16 +263,6 @@ int main(int argc, const char* argv[])
 	fclose(music_file_f);
 	fclose(music_file_temp);
 	remove(".temp");
-
-
-
-
-
-
-
-
-
-
 
 	exit(0);
 }

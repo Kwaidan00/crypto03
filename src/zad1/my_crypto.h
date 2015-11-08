@@ -1,3 +1,7 @@
+/*
+ * Author: Aleksander Spyra
+ */
+
 #include <random>
 #include <openssl/aes.h>
 #include <openssl/conf.h>
@@ -6,6 +10,10 @@
 
 using namespace std;
 
+/*
+ * This function encrypt a given c-string using 256-bits AES in CBC mode. Encrypted message is in c-string ciphertext.
+ * Returned value: length of the ciphertext
+ */
 int encrypt_aes_256_cbc(unsigned char *text, int text_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext)
 {
 	EVP_CIPHER_CTX *ctx;
@@ -13,26 +21,26 @@ int encrypt_aes_256_cbc(unsigned char *text, int text_len, unsigned char *key, u
 	int ciphertext_len;
 	if ( !(ctx = EVP_CIPHER_CTX_new()) )
 	{
-		//cout << "Error" << endl;
 	}
 	if ( EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) != 1)
 	{
-		//cout << "Error" << endl;
 	}
 	if ( EVP_EncryptUpdate(ctx, ciphertext, &len, text, text_len) != 1 )
 	{
-		//cout << "Error" << endl;
 	}
 	ciphertext_len = len;
 	if ( EVP_EncryptFinal_ex(ctx, ciphertext + len, &len) != 1 )
 	{
-		//cout << "Error" << endl;
 	}
 	ciphertext_len += len;
 	EVP_CIPHER_CTX_free(ctx);
 	return ciphertext_len;
 }
 
+/*
+ * This function decrypt a given c-string using 256-bits AES in CBC mode. Decrypted message is in c-string plaintext. 
+ * Returned value: length of the plaintext.
+ */
 int decrypt_aes_256_cbc(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv, unsigned char *plaintext)
 {
 	EVP_CIPHER_CTX *ctx;
@@ -56,7 +64,10 @@ int decrypt_aes_256_cbc(unsigned char *ciphertext, int ciphertext_len, unsigned 
 	return plaintext_len;
 }
 
-
+/*
+ * This function hash a given c-string input using SHA-512. Digested value is stored in output. 
+ * Returned value: length of the output.
+ */
 unsigned int hash_sha512(unsigned char *input, unsigned char *output, size_t input_len)
 {
 	EVP_MD_CTX *mdctx;
@@ -76,6 +87,10 @@ unsigned int hash_sha512(unsigned char *input, unsigned char *output, size_t inp
 	return output_len;
 }
 
+/* 
+ * This function decrypt a given file (by FILE*) input using AES 256 with given encoding mode.
+ *
+ */
 int decrypt_aes_256_file(unsigned char *key, unsigned char *iv, FILE *input, FILE *output, string mode)
 {
 	int bufsize = 4096;
