@@ -87,42 +87,15 @@ int main(int argc, const char* argv[])
 	unsigned char returned_key[128];
 	int returned_key_len = get_decrypted_key("aleks", key_id, path_to_keystore, returned_key);
 	unsigned char key[returned_key_len];
+		printf("asdasd");
 	for (int i = 0; i < returned_key_len; i++)
 	{
 		key[i] = returned_key[i];
 	}
-
-	unsigned char* iv;
-	iv = (unsigned char*)malloc(16*sizeof(unsigned char));
-	
-	if ( mode.compare("encode") == 0 )
-	{
-		random_device rd;
-		mt19937 mersenne0(rd());
-		for (int i = 0; i < 16; i++) 
-		{
-			iv[i] = (unsigned char)mersenne0();
-		}
-		fwrite(iv, sizeof(unsigned char), 16, output);
-	}
-	else if ( mode.compare("decode") == 0 )
-	{
-		int r = fread( iv, sizeof(unsigned char), 16, input );
-	}
-
 	if (returned_key_len != -1)
 	{
-		if ( encoding_mode.compare("CBC") == 0 || encoding_mode.compare("CTR") == 0 || encoding_mode.compare("GCM") == 0 )
-		{
-			if ( mode.compare("encode") == 0 )
-			{
-				encrypt_aes_256_file(key, iv, input, output, encoding_mode);
-			}
-			else if ( mode.compare("decode") == 0 )
-			{
-				decrypt_aes_256_file(key, iv, input, output, encoding_mode);
-			}
-		}
+
+		crypt_file(key, mode, encoding_mode, input, output);
 	}
 
 

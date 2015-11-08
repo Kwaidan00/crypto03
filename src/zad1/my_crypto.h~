@@ -199,3 +199,37 @@ int encrypt_aes_256_file(unsigned char *key, unsigned char *iv, FILE *input, FIL
 	EVP_CIPHER_CTX_free(ctx);
 	return ciphertext_len;
 }
+
+void crypt_file(unsigned char *key, string mode, string encoding_mode, FILE *input, FILE *output)
+	{
+		unsigned char* iv;
+		iv = (unsigned char*)malloc(16*sizeof(unsigned char));
+	
+		if ( mode.compare("encode") == 0 )
+		{
+			random_device rd;
+			mt19937 mersenne0(rd());
+			for (int i = 0; i < 16; i++) 
+			{
+				iv[i] = (unsigned char)mersenne0();
+			}
+			fwrite(iv, sizeof(unsigned char), 16, output);
+		}
+		else if ( mode.compare("decode") == 0 )
+		{
+			int r = fread( iv, sizeof(unsigned char), 16, input );
+		}
+
+	
+		if ( encoding_mode.compare("CBC") == 0 || encoding_mode.compare("CTR") == 0 || encoding_mode.compare("GCM") == 0 )
+		{
+			if ( mode.compare("encode") == 0 )
+			{
+				encrypt_aes_256_file(key, iv, input, output, encoding_mode);
+			}
+			else if ( mode.compare("decode") == 0 )
+			{
+				decrypt_aes_256_file(key, iv, input, output, encoding_mode);
+			}
+		}
+	}
