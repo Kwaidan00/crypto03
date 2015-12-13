@@ -1,0 +1,93 @@
+Zadanie 1
+
+openssl genrsa -out privkeyA.pem -des3 3072
+
+Nie wybrałem DSA, bo jest opatentowany.
+Długość klucza 3072 - wtedy klucz RSA ma siłę bezpieczeństwa równą 128 bitom
+
+Passphrase: *******
+
+Klucz tak wygenerowany znajduje się w katalogu, w którym odpalono komendę.
+
+openssl req -new -key privkeyA.pem -out certA.csr
+
+Interaktywnie należy podawać dane. Rozmowa z opensslem:
+
+guest@porteus:~$ openssl req -new -key privkeyA.pem -out certA.csr
+Enter pass phrase for privkeyA.pem:
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:PL
+State or Province Name (full name) [Some-State]:Lower Silesia
+Locality Name (eg, city) []:Wroclaw
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
+Organizational Unit Name (eg, section) []:.
+Common Name (e.g. server FQDN or YOUR name) []:localhost
+Email Address []:you@example.com
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:.
+An optional company name []:.
+
+Teraz mamy już CSR za pomocą klucza A, teraz robimy klucz B:
+
+openssl genrsa -out privkeyB.pem -des3 3072
+
+Self-signed: zostajemy CA i będziemy nadawać innym klucze.
+
+openssl req -new -x509 -key privkeyB.pem -out CAcert.crt -days 15
+
+-x509 - tworzy samopodpisany certyfikat za pomocą podanego klucza (-key) 
+-days - liczba dni certyfikacji.
+
+openssl x509 -req -days 45 -in certA.csr -CA CAcert.crt -CAkey privkeyB.pem -set_serial 01 -out certA.crt
+
+Ponieważ podano opcję -CA, opcja -in działa tak, że plik po -in jest podpisywany przez -CA.
+
+Czyli:
+plik certA.csr (-in) jest podpisywany przez CAcert.crt (-CA), którego kluczem prywatnym używanym do podpisu 
+jest privkeyB.pem (-CAkey).
+Jest to pierwszy podpisany przez CAcert.crt klucz (-set_serial 01).
+Wynikiem jest certA.crt
+
+
+Zadanie 2
+
+1. FF -> Menu -> Preferences -> Advanced -> Certificates -> View Certificates -> Authorities -> Import
+Dodano CA o nazwie localhost
+
+2. Serwer - LAMP na systemie Porteus; folder www: /var/www/, ustawienia serwera: /etc/httpd/ 
+Aby uruchomić serwer: su -> httpd.
+Restart: httpd -k restart
+Wymuszenie używania jedynie https wymagało modyfikacji pliku httpd.conf i skorzystanie z RewriteEngine.
+    Użycie SSL:
+<VirtualHost _default_:443>
+#   General setup for the virtual host
+DocumentRoot "/srv/httpd/htdocs"
+ServerName 127.0.0.1:443
+ServerAdmin you@example.com
+ErrorLog "/var/log/httpd/error_log"
+TransferLog "/var/log/httpd/access_log"
+#   SSL Engine Switch:
+SSLEngine on
+#   Server Certificate:
+SSLCertificateFile "/etc/httpd/extra/certA.crt"
+#   Server Private Key:
+SSLCertificateKeyFile "/etc/httpd/extra/privkeyA.pem"
+
+Przeglądarka nie daje ostrzeżeń ani nic z tych rzeczy: strona localhost została zweryfikowana przez localhost.
+
+
+Zadanie 3
+  
+Bezproblemowo działa ze stroną poczty studenckiej (https://smail.pwr.edu.pl); zamienia metodę formularza z POST na GET i przesyła plikowi PHP, 
+który podane zmienne (czyli login i hasło) zapisuje w pliku. Aby zapisywać do pliku, należało zmienić ustawienia pliku wynikowego: chmod 777 passwords.txt.
+Problematyczne jest zrobienie tego samego ze stroną Gmaila, ponieważ tam następuje przesył danych i wstępna weryfikacja po wpisaniu loginu 
+(użytkownik podaje login -> przesyłane na serwer -> odpowiedź serwera, czy istnieje taki login -> jeśli tak, można podać hasło);
+wymaga to już więcej umiejętności z zakresu programowania w PHP i większego zrozumienia skryptów JS zawartych w pliku Google'a.
