@@ -1,0 +1,69 @@
+Testy działania generowania liczb pierwszych (czas w ms):
+
+Generating 1 prime(s) 256 bit length takes 183
+Generating 1 prime(s) 512 bit length takes 161
+Generating 1 prime(s) 1024 bit length takes 1291
+Generating 1 prime(s) 2048 bit length takes 6248
+Generating 1 prime(s) 3072 bit length takes 38609
+Generating 2 prime(s) 256 bit length takes 23
+Generating 2 prime(s) 512 bit length takes 185
+Generating 2 prime(s) 1024 bit length takes 1065
+Generating 2 prime(s) 2048 bit length takes 28037
+Generating 2 prime(s) 3072 bit length takes 136751
+Generating 3 prime(s) 256 bit length takes 80
+Generating 3 prime(s) 512 bit length takes 198
+Generating 3 prime(s) 1024 bit length takes 4117
+Generating 3 prime(s) 2048 bit length takes 17164
+Generating 3 prime(s) 3072 bit length takes 147086
+Generating 4 prime(s) 256 bit length takes 29
+Generating 4 prime(s) 512 bit length takes 389
+Generating 4 prime(s) 1024 bit length takes 2829
+Generating 4 prime(s) 2048 bit length takes 40125
+Generating 4 prime(s) 3072 bit length takes 84748
+Generating 5 prime(s) 256 bit length takes 70
+Generating 5 prime(s) 512 bit length takes 202
+Generating 5 prime(s) 1024 bit length takes 2749
+Generating 5 prime(s) 2048 bit length takes 19641
+Generating 5 prime(s) 3072 bit length takes 294802
+Generating 6 prime(s) 256 bit length takes 26
+Generating 6 prime(s) 512 bit length takes 432
+Generating 6 prime(s) 1024 bit length takes 6520
+Generating 6 prime(s) 2048 bit length takes 33133
+Generating 6 prime(s) 3072 bit length takes 103918
+Generating 7 prime(s) 256 bit length takes 83
+Generating 7 prime(s) 512 bit length takes 515
+Generating 7 prime(s) 1024 bit length takes 3355
+Generating 7 prime(s) 2048 bit length takes 66059
+Generating 7 prime(s) 3072 bit length takes 365355
+Generating 8 prime(s) 256 bit length takes 106
+Generating 8 prime(s) 512 bit length takes 564
+Generating 8 prime(s) 1024 bit length takes 8598
+Generating 8 prime(s) 2048 bit length takes 118954
+Generating 8 prime(s) 3072 bit length takes 300893
+Generating 1 prime(s) 7680 bit length takes 8866703
+Generating 2 prime(s) 7680 bit length takes 2003437
+Generating 3 prime(s) 7680 bit length takes 3766753
+Generating 4 prime(s) 7680 bit length takes 6151400
+
+
+
+Porównanie AES i RSA
+
+Zgodnie z fragmentem tabeli zaprezentowanej w raporcie NIST (s. 63):
+
+Security Strength	Symmetric	RSA
+128			AES-128		k = 3072
+192			AES-192		k = 7680
+256			AES-256		k = 15360 
+
+Zakodowano i odkodowano ten sam plik o wielkości 4,7 MB za pomocą szyfrowania AES 256 w trybie CBC
+oraz za pomocą RSA z kluczem długości 15360 bitów (15 * 1024 bitów).
+Czasy uzyskano za pomocą polecenia powłoki time (zsumowano czasy user + sys).
+
+	kodowanie	dekodowanie
+AES	0.047 s		0.031 s
+RSA	26.567 s	3 m 55.818 s
+
+Trzeba jednak zaznaczyć, że AES został napisany w jezyku kompilowanym do poziomu maszyny (C++), natomiast
+RSA w języku działającym na maszynie wirtualnej (Java). 
+Należy wziąć ten fakt pod uwagę (vide http://dx.doi.org/10.4236/jsea.2012.58072).
