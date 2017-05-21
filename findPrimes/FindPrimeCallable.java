@@ -1,4 +1,4 @@
-package zad2;
+package findPrimes;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

@@ -1,34 +1,34 @@
-package zad2;
+package findPrimes;
 
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.concurrent.Callable;
 
 /**
  *
  * Class for concurrently find large prime numbers
- * It uses Callable interface, so it returns founded numbers to the caller
- * 
+ *
  * @author Aleksander Spyra
  * 2017
  */
-public class FindPrimeCallable implements Callable<BigInteger> {
-	
+public class PrimeThread extends Thread {
+
 	private int d;
+	PrintWriter fileWriter;
 	SecureRandom random;
 	
-	FindPrimeCallable(int d) {
+	PrimeThread(int d, PrintWriter fileWriter) {
 		this.d = d;
+		this.fileWriter = fileWriter;
 		this.random = new SecureRandom();
 	}
-
+	
 	/**
 	 * When the thread runs, it generates random odd big numbers and check if it is prime.
 	 * It uses https://docs.oracle.com/javase/7/docs/api/java/math/BigInteger.html#isProbablePrime(int) method
-	 * It returns founded prime.
+	 * Founded prime is written to the text file
 	 */
-	@Override
-	public BigInteger call() throws Exception {
+	public void run() {
 		BigInteger k;
 		do {
 			k = new BigInteger(d, random);
@@ -37,7 +37,10 @@ public class FindPrimeCallable implements Callable<BigInteger> {
 			}
 		}
 		while (!k.isProbablePrime(30));
-		return k;
-	}
+		synchronized (fileWriter) {
+			fileWriter.println(k.toString(16));
+			fileWriter.flush();
+		}
 
+	}
 }
